@@ -1,6 +1,7 @@
 package com.tiv.bi.service.impl;
 
 import com.tiv.bi.service.DocumentService;
+import com.tiv.bi.splitter.NumberTitleTextSplitter;
 import jakarta.annotation.Resource;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.reader.tika.TikaDocumentReader;
@@ -22,8 +23,12 @@ public class DocumentServiceImpl implements DocumentService {
         TikaDocumentReader tikaDocumentReader = new TikaDocumentReader(multipartFile.getResource());
         List<Document> documents = tikaDocumentReader.get();
 
-        // 2. 入库
-        vectorStore.add(documents);
+        // 2. 文档分割
+        NumberTitleTextSplitter numberTitleTextSplitter = new NumberTitleTextSplitter();
+        List<Document> splits = numberTitleTextSplitter.split(documents);
+
+        // 3. 保存到向量数据库
+        vectorStore.add(splits);
     }
 
 }
