@@ -19,6 +19,18 @@ spring:
           model: BAAI/bge-m3
         base-url: https://api.siliconflow.cn
         api-key: ${EMBEDDING_API_KEY}
+    vectorstore:
+      redis:
+        index-name: bi-agent-4j
+        prefix: bi-agent
+        initialize-schema: true
+  data:
+    redis:
+      database: 0
+      host: localhost
+      port: 7379
+      timeout: 5s
+      connect-timeout: 5s
 
 server:
   port: 8115
