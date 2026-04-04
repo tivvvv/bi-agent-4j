@@ -54,6 +54,7 @@ public class GenSqlNode implements NodeAction {
                         5. 仅生成可执行的SQL语句,不输出其他任何与SQL无关的文字和解释.
                         6. 禁止以Markdown格式输出,直接以纯文本格式输出.
                         7. 输出中严禁包含'```','SQL'等字符,这些字符不是SQL的一部分,会影响SQL的正常执行.
+                        8. 输出中不要有换行符,回车符等特殊字符,这些字符会影响SQL的正常执行.
                         """)
                 .user(userInput)
                 .stream()
