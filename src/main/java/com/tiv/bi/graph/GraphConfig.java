@@ -33,7 +33,7 @@ public class GraphConfig {
         StateGraph stateGraph = registerStateGraph();
 
         // 添加节点
-        stateGraph.addNode(NodeConstants.GEN_SQL_NODE, AsyncNodeAction.node_async(new GenSqlNode(chatClientBuilder.build(), vectorStore)));
+        stateGraph.addNode(NodeConstants.GEN_SQL_NODE, AsyncNodeAction.node_async(new GenSqlNode(chatClientBuilder, vectorStore)));
 
         // 添加边
         stateGraph.addEdge(StateGraph.START, NodeConstants.GEN_SQL_NODE);

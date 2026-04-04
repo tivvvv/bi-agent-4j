@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.rag.advisor.RetrievalAugmentationAdvisor;
+import org.springframework.ai.rag.preretrieval.query.transformation.RewriteQueryTransformer;
 import org.springframework.ai.rag.retrieval.search.VectorStoreDocumentRetriever;
 import org.springframework.ai.vectorstore.VectorStore;
 import reactor.core.publisher.Flux;
@@ -20,16 +21,24 @@ import java.util.Map;
 @AllArgsConstructor
 public class GenSqlNode implements NodeAction {
 
-    private ChatClient chatClient;
+    private ChatClient.Builder chatClientBuilder;
 
     private VectorStore vectorStore;
 
     @Override
     public Map<String, Object> apply(OverAllState state) throws Exception {
-        // 1. RAG召回
+        // 1. 从状态机获取用户输入
         String userInput = state.value(Constants.USER_INPUT, "");
+
+        // 2. 重写查询转换器
+        RewriteQueryTransformer rewriteQueryTransformer = RewriteQueryTransformer.builder()
+                .chatClientBuilder(chatClientBuilder)
+                .build();
+        
+        // 3. RAG召回
         RetrievalAugmentationAdvisor retrievalAugmentationAdvisor = RetrievalAugmentationAdvisor
                 .builder()
+                .queryTransformers(rewriteQueryTransformer)
                 // 指定文档检索器
                 .documentRetriever(VectorStoreDocumentRetriever
                         .builder()
@@ -37,8 +46,10 @@ public class GenSqlNode implements NodeAction {
                         .build())
                 .build();
 
-        // 2. 调用大模型生成SQL
-        Flux<String> content = chatClient.prompt()
+        // 4. 调用大模型生成SQL
+        Flux<String> content = chatClientBuilder
+                .build()
+                .prompt()
                 .advisors(retrievalAugmentationAdvisor)
                 .system("""
                         # 角色:
