@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.rag.advisor.RetrievalAugmentationAdvisor;
+import org.springframework.ai.rag.generation.augmentation.ContextualQueryAugmenter;
 import org.springframework.ai.rag.preretrieval.query.transformation.RewriteQueryTransformer;
 import org.springframework.ai.rag.retrieval.search.VectorStoreDocumentRetriever;
 import org.springframework.ai.vectorstore.VectorStore;
@@ -34,19 +35,27 @@ public class GenSqlNode implements NodeAction {
         RewriteQueryTransformer rewriteQueryTransformer = RewriteQueryTransformer.builder()
                 .chatClientBuilder(chatClientBuilder)
                 .build();
-        
-        // 3. RAG召回
+
+        // 3. 向量文档检索器
+        VectorStoreDocumentRetriever vectorStoreDocumentRetriever = VectorStoreDocumentRetriever.builder()
+                .vectorStore(vectorStore)
+                .build();
+
+        // 4. 上下文查询增强器
+        ContextualQueryAugmenter contextualQueryAugmenter = ContextualQueryAugmenter.builder()
+                .allowEmptyContext(true)
+                .build();
+
+        // 5. RAG召回
         RetrievalAugmentationAdvisor retrievalAugmentationAdvisor = RetrievalAugmentationAdvisor
                 .builder()
                 .queryTransformers(rewriteQueryTransformer)
                 // 指定文档检索器
-                .documentRetriever(VectorStoreDocumentRetriever
-                        .builder()
-                        .vectorStore(vectorStore)
-                        .build())
+                .documentRetriever(vectorStoreDocumentRetriever)
+                .queryAugmenter(contextualQueryAugmenter)
                 .build();
 
-        // 4. 调用大模型生成SQL
+        // 6. 调用大模型生成SQL
         Flux<String> content = chatClientBuilder
                 .build()
                 .prompt()
