@@ -8,6 +8,7 @@ import com.alibaba.cloud.ai.graph.exception.GraphStateException;
 import com.alibaba.cloud.ai.graph.state.strategy.ReplaceStrategy;
 import com.tiv.bi.common.Constants;
 import com.tiv.bi.common.NodeConstants;
+import com.tiv.bi.graph.node.ExecSqlAndGenExcelNode;
 import com.tiv.bi.graph.node.GenSqlNode;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
@@ -15,6 +16,7 @@ import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.util.Map;
 
@@ -28,16 +30,21 @@ public class GraphConfig {
     @Resource
     private VectorStore vectorStore;
 
+    @Resource
+    private JdbcTemplate jdbcTemplate;
+
     @Bean
     public CompiledGraph graph(ChatClient.Builder chatClientBuilder) throws GraphStateException {
         StateGraph stateGraph = registerStateGraph();
 
         // 添加节点
         stateGraph.addNode(NodeConstants.GEN_SQL_NODE, AsyncNodeAction.node_async(new GenSqlNode(chatClientBuilder, vectorStore)));
+        stateGraph.addNode(NodeConstants.EXEC_SQL_AND_GEN_EXCEL_NODE, AsyncNodeAction.node_async(new ExecSqlAndGenExcelNode(jdbcTemplate)));
 
         // 添加边
         stateGraph.addEdge(StateGraph.START, NodeConstants.GEN_SQL_NODE);
-        stateGraph.addEdge(NodeConstants.GEN_SQL_NODE, StateGraph.END);
+        stateGraph.addEdge(NodeConstants.GEN_SQL_NODE, NodeConstants.EXEC_SQL_AND_GEN_EXCEL_NODE);
+        stateGraph.addEdge(NodeConstants.EXEC_SQL_AND_GEN_EXCEL_NODE, StateGraph.END);
 
         // 编译
         return stateGraph.compile();

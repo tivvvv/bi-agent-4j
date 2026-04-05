@@ -8,4 +8,6 @@ public interface Constants {
 
     String GEN_SQL = "genSql";
 
+    String EXCEL = "excel";
+
 }
