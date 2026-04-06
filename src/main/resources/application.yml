@@ -31,9 +31,20 @@ spring:
       port: 7379
       timeout: 5s
       connect-timeout: 5s
+  mail:
+    host: smtp.163.com
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    port: 25
+    default-encoding: UTF-8
+    protocol: smtp
 
 server:
   port: 8115
+
+notification:
+  email:
+    receiver: ${NOTIFICATION_EMAIL_RECEIVER}
 
 logging:
   level:

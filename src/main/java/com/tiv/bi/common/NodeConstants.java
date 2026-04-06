@@ -6,4 +6,6 @@ public interface NodeConstants {
 
     String EXEC_SQL_AND_GEN_EXCEL_NODE = "exec_sql_and_gen_excel_node";
 
+    String NOTIFY_NODE = "notify_node";
+
 }
