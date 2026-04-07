@@ -10,4 +10,6 @@ public interface Constants {
 
     String EXCEL = "excel";
 
+    String EVALUATE_RESULT = "evaluate_result";
+
 }

@@ -65,7 +65,8 @@ public class GraphConfig {
         KeyStrategyFactory keyStrategyFactory = () -> Map.of(
                 Constants.USER_INPUT, new ReplaceStrategy(),
                 Constants.GEN_SQL, new ReplaceStrategy(),
-                Constants.EXCEL, new ReplaceStrategy());
+                Constants.EXCEL, new ReplaceStrategy(),
+                Constants.EVALUATE_RESULT, new ReplaceStrategy());
         return new StateGraph(Constants.BI_AGENT_GRAPH, keyStrategyFactory);
     }
 

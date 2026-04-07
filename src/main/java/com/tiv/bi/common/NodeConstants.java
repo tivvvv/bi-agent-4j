@@ -8,4 +8,6 @@ public interface NodeConstants {
 
     String NOTIFY_NODE = "notify_node";
 
+    String EVALUATE_SQL_NODE = "evaluate_sql_node";
+
 }
