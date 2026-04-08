@@ -29,6 +29,10 @@ public class NotifyNode implements NodeAction {
             // 发送含附件的文件
             File file = (File) excel.get();
             emailService.sendEmailWithAttachment(receiver, "查询数据", file);
+            // 删除临时文件
+            if (file.exists()) {
+                file.delete();
+            }
         } else {
             // 发送纯文本文件
             emailService.sendEmail(receiver, "查询数据不存在");
