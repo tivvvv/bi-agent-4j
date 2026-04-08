@@ -25,7 +25,7 @@ public class GlobalExceptionHandler {
      * @return
      */
     @ExceptionHandler(BusinessException.class)
-    public BusinessResponse<?> businessExceptionHandler(BusinessException e) {
+    public BusinessResponse<?> handleBusinessException(BusinessException e) {
         log.error("BusinessException", e);
         return ResultUtils.error(e.getCode(), e.getMessage());
     }
@@ -37,7 +37,7 @@ public class GlobalExceptionHandler {
      * @return
      */
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public BusinessResponse<String> handleValidationExceptions(MethodArgumentNotValidException e) {
+    public BusinessResponse<String> handleValidationException(MethodArgumentNotValidException e) {
         String errorMsg = e.getBindingResult().getAllErrors().stream()
                 .map(DefaultMessageSourceResolvable::getDefaultMessage).collect(Collectors.joining());
         return ResultUtils.error(BusinessCodeEnum.PARAMS_ERROR, errorMsg);
@@ -50,8 +50,20 @@ public class GlobalExceptionHandler {
      * @return
      */
     @ExceptionHandler(RuntimeException.class)
-    public BusinessResponse<?> businessExceptionHandler(RuntimeException e) {
+    public BusinessResponse<?> handleRuntimeException(RuntimeException e) {
         log.error("RuntimeException", e);
+        return ResultUtils.error(BusinessCodeEnum.SYSTEM_ERROR);
+    }
+
+    /**
+     * 异常处理
+     *
+     * @param e
+     * @return
+     */
+    @ExceptionHandler(Exception.class)
+    public BusinessResponse<?> handleException(Exception e) {
+        log.error("Exception", e);
         return ResultUtils.error(BusinessCodeEnum.SYSTEM_ERROR);
     }
 
