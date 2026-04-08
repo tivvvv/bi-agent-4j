@@ -27,6 +27,7 @@ public class EmailServiceImpl implements EmailService {
     @Override
     public void sendEmail(String receiver, String content) {
         MimeMessage mimeMessage = javaMailSender.createMimeMessage();
+        log.info("sendEmail--start, receiver: {}", receiver);
         try {
             MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
             helper.setFrom(sender);
@@ -44,6 +45,7 @@ public class EmailServiceImpl implements EmailService {
     @Override
     public void sendEmailWithAttachment(String receiver, String content, File file) {
         MimeMessage mimeMessage = javaMailSender.createMimeMessage();
+        log.info("sendEmailWithAttachment--start, receiver: {}", receiver);
         try {
             MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
             helper.setFrom(sender);

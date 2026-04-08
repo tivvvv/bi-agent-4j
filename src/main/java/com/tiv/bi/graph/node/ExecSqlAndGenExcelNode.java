@@ -1,6 +1,7 @@
 package com.tiv.bi.graph.node;
 
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import com.alibaba.cloud.ai.graph.OverAllState;
 import com.alibaba.cloud.ai.graph.action.NodeAction;
@@ -33,11 +34,17 @@ public class ExecSqlAndGenExcelNode implements NodeAction {
         // 1. 从状态机获取SQL
         String sql = state.value(Constants.GEN_SQL, "");
 
-        // 2. jdbcTemplate执行查询SQL
-        List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql);
-        log.info("ExecSqlAndCreateExcelNode--apply--rows: {}", JSONUtil.toJsonStr(rows));
+        // 2. 如果SQL为空
+        if (StrUtil.isBlank(sql)) {
+            log.info("ExecSqlAndGenExcelNode--apply--sql is blank");
+            return Map.of();
+        }
 
-        // 3. 生成Excel
+        // 3. jdbcTemplate执行查询SQL
+        List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql);
+        log.info("ExecSqlAndGenExcelNode--apply--rows: {}", JSONUtil.toJsonStr(rows));
+
+        // 4. 生成Excel
         File excel = genExcelFile(rows);
         return Map.of(Constants.EXCEL, excel);
     }

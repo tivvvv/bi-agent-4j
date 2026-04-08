@@ -12,4 +12,12 @@ public interface Constants {
 
     String EVALUATE_RESULT = "evaluate_result";
 
+    String LOOP_COUNT = "loop_count";
+
+    String THREAD_PREFIX = "thread:";
+
+    String PASS = "PASS";
+
+    int MAX_LOOP_COUNT = 3;
+
 }

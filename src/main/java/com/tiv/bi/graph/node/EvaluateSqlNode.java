@@ -1,5 +1,6 @@
 package com.tiv.bi.graph.node;
 
+import cn.hutool.core.util.StrUtil;
 import com.alibaba.cloud.ai.graph.OverAllState;
 import com.alibaba.cloud.ai.graph.action.NodeAction;
 import com.tiv.bi.common.Constants;
@@ -26,11 +27,21 @@ public class EvaluateSqlNode implements NodeAction {
 
     @Override
     public Map<String, Object> apply(OverAllState state) throws Exception {
-        // 1. 从状态机获取SQL
-        String sql = state.value(Constants.GEN_SQL, "");
+        // 1. 从状态机获取用户输入,SQL和循环次数
         String user_input = state.value(Constants.USER_INPUT, "");
+        String sql = state.value(Constants.GEN_SQL, "");
+        Integer loopCount = state.value(Constants.LOOP_COUNT, 0);
+        log.info("EvaluateSqlNode--apply--到达SQL评估节点, user_input: {}, sql: {}, loopCount: {}", user_input, sql, loopCount);
+        loopCount++;
 
-        // 2. 向量文档检索器
+        // 2. 如果sql为空,说明生成sql节点识别到用户输入不合法,直接返回
+        if (StrUtil.isBlank(sql)) {
+            log.info("EvaluateSqlNode--apply--评估结果为PASS,因为SQL为空");
+            return Map.of(Constants.EVALUATE_RESULT, Constants.PASS,
+                    Constants.LOOP_COUNT, loopCount);
+        }
+
+        // 3. 向量文档检索器
         RetrievalAugmentationAdvisor retrievalAugmentationAdvisor = RetrievalAugmentationAdvisor
                 .builder()
                 .documentRetriever(VectorStoreDocumentRetriever.builder()
@@ -38,7 +49,7 @@ public class EvaluateSqlNode implements NodeAction {
                         .build())
                 .build();
 
-        // 3. 调用大模型评估SQL
+        // 4. 调用大模型评估SQL
         Flux<String> content = chatClientBuilder.build()
                 .prompt()
                 .advisors(retrievalAugmentationAdvisor)
@@ -86,7 +97,8 @@ public class EvaluateSqlNode implements NodeAction {
                 .blockLast();
         String result = sb.toString();
         log.info("EvaluateNode--apply--content: {}", result);
-        return Map.of(Constants.EVALUATE_RESULT, result);
+        return Map.of(Constants.EVALUATE_RESULT, result,
+                Constants.LOOP_COUNT, loopCount);
     }
 
 }

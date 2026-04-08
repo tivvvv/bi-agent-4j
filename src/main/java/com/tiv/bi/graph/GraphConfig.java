@@ -3,11 +3,14 @@ package com.tiv.bi.graph;
 import com.alibaba.cloud.ai.graph.CompiledGraph;
 import com.alibaba.cloud.ai.graph.KeyStrategyFactory;
 import com.alibaba.cloud.ai.graph.StateGraph;
+import com.alibaba.cloud.ai.graph.action.AsyncEdgeAction;
 import com.alibaba.cloud.ai.graph.action.AsyncNodeAction;
 import com.alibaba.cloud.ai.graph.exception.GraphStateException;
 import com.alibaba.cloud.ai.graph.state.strategy.ReplaceStrategy;
 import com.tiv.bi.common.Constants;
 import com.tiv.bi.common.NodeConstants;
+import com.tiv.bi.graph.edge.EvaluateSqlEdge;
+import com.tiv.bi.graph.node.EvaluateSqlNode;
 import com.tiv.bi.graph.node.ExecSqlAndGenExcelNode;
 import com.tiv.bi.graph.node.GenSqlNode;
 import com.tiv.bi.graph.node.NotifyNode;
@@ -48,12 +51,18 @@ public class GraphConfig {
 
         // 添加节点
         stateGraph.addNode(NodeConstants.GEN_SQL_NODE, AsyncNodeAction.node_async(new GenSqlNode(chatClientBuilder, vectorStore)));
+        stateGraph.addNode(NodeConstants.EVALUATE_SQL_NODE, AsyncNodeAction.node_async(new EvaluateSqlNode(chatClientBuilder, vectorStore)));
         stateGraph.addNode(NodeConstants.EXEC_SQL_AND_GEN_EXCEL_NODE, AsyncNodeAction.node_async(new ExecSqlAndGenExcelNode(jdbcTemplate)));
         stateGraph.addNode(NodeConstants.NOTIFY_NODE, AsyncNodeAction.node_async(new NotifyNode(emailService, receiver)));
 
         // 添加边
         stateGraph.addEdge(StateGraph.START, NodeConstants.GEN_SQL_NODE);
-        stateGraph.addEdge(NodeConstants.GEN_SQL_NODE, NodeConstants.EXEC_SQL_AND_GEN_EXCEL_NODE);
+        stateGraph.addEdge(NodeConstants.GEN_SQL_NODE, NodeConstants.EVALUATE_SQL_NODE);
+        stateGraph.addConditionalEdges(NodeConstants.EVALUATE_SQL_NODE, AsyncEdgeAction.edge_async(new EvaluateSqlEdge()),
+                Map.of(
+                        NodeConstants.GEN_SQL_NODE, NodeConstants.GEN_SQL_NODE,
+                        NodeConstants.EXEC_SQL_AND_GEN_EXCEL_NODE, NodeConstants.EXEC_SQL_AND_GEN_EXCEL_NODE,
+                        StateGraph.END, StateGraph.END));
         stateGraph.addEdge(NodeConstants.EXEC_SQL_AND_GEN_EXCEL_NODE, NodeConstants.NOTIFY_NODE);
         stateGraph.addEdge(NodeConstants.NOTIFY_NODE, StateGraph.END);
 
@@ -66,7 +75,8 @@ public class GraphConfig {
                 Constants.USER_INPUT, new ReplaceStrategy(),
                 Constants.GEN_SQL, new ReplaceStrategy(),
                 Constants.EXCEL, new ReplaceStrategy(),
-                Constants.EVALUATE_RESULT, new ReplaceStrategy());
+                Constants.EVALUATE_RESULT, new ReplaceStrategy(),
+                Constants.LOOP_COUNT, new ReplaceStrategy());
         return new StateGraph(Constants.BI_AGENT_GRAPH, keyStrategyFactory);
     }
 

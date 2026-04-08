@@ -12,6 +12,7 @@ spring:
       chat:
         options:
           model: qwen3-max
+          temperature: 0.5
         base-url: https://dashscope.aliyuncs.com/compatible-mode
         api-key: ${CHAT_API_KEY}
       embedding:
